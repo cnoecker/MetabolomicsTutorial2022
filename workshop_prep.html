@@ -418,7 +418,7 @@ div.tocify {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="workshop_prep.html">Advance setup for the workshop</a>
+  <a href="workshop_prep.html">Advance setup</a>
 </li>
 <li>
   <a href="index.html">Tutorial</a>
@@ -459,26 +459,26 @@ div.tocify {
 <p>If you run into any setup problems or questions, please feel free to email me at cecilia.noecker at ucsf.edu.</p>
 <div id="set-up-your-r-project-and-install-packages" class="section level1">
 <h1><span class="header-section-number">1</span> Set up your R project and install packages</h1>
-<p>Hopefully you have already installed R, RStudio, and the tidyverse suite of packages for the previous amplicon sequencing tutorial. If you still need to install these, you can find instructions for doing so <a href="https://datacarpentry.org/R-ecology-lesson/#Preparations">here</a>. The linked Data/Software Carpentry website includes a lot of other resources for learning R and doing scientific data analysis.</p>
+<p>Hopefully you have already installed R, RStudio, and the tidyverse suite of packages for the previous amplicon sequencing tutorial. If you still need to install these, you can find instructions for doing so <a href="https://datacarpentry.org/R-ecology-lesson/#Preparations">here</a>. The linked Data/Software Carpentry website includes a lot of other useful resources for learning R and doing scientific data analysis.</p>
+<p>For this session, we will create an R Project to organize our analyses. To do so, open RStudio, select File -&gt; New Project… and create a new folder for this project (name it whatever you want).</p>
 <p>You will also need to install the following 4 packages:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">install.packages</span>(<span class="st">&quot;tidymodels&quot;</span>)</a>
 <a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">install.packages</span>(<span class="st">&quot;vip&quot;</span>)</a>
 <a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">install.packages</span>(<span class="st">&quot;webchem&quot;</span>)</a>
 <a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw">install.packages</span>(<span class="st">&quot;KEGGREST&quot;</span>)</a></code></pre></div>
-<p>For this session, we will create an R Project to organize our analyses. To do so, open RStudio, select File -&gt; New Project… and create a new folder for this project. Inside that folder, create another folder called “data”, to store the data (if you want, you can do this from within RStudio by clicking the “Files” tab in the lower right panel and selecting “New Folder”).</p>
 </div>
 <div id="download-data" class="section level1">
 <h1><span class="header-section-number">2</span> Download data</h1>
 <p>In this tutorial, we’ll analyze processed datasets made available as part of the large-scale Integrative Human Microbiome Project data resource (a.k.a. HMP2). The study and data are described in <a href="https://www.nature.com/articles/s41564-018-0306-4">Franzosa et al Nature Microbiology, 2019</a>.</p>
 <p>In this study, the researchers profiled stool samples from a cohort of individuals with ulcerative colitis, Crohn’s disease, and non-IBD controls. Most subjects were sampled at several time points. These individuals were recruited at 5 different study sites. In the interest of computational feasibility we will focus our analysis on a subset of samples from just 2 sites. Stool samples collected from all subjects were profiled using metagenomics and metabolomics assays, as shown in Figure 1a from the publication:</p>
 <p><img src="img/fig1.png" /></p>
-<p>If your computer has at least 8GB of memory and ~500MB of storage available, I recommend working through Option 1, which describes how to download the full dataset from the HMP portal and work through some data processing to prepare it for analysis. This will allow you to practice your R skills and see an example workflow of setting up a re-analysis of a public dataset. However, if your computer has less memory, it might have a hard time processing these tables (especially <code>ecs_3.tsv.gz</code>), in which case you can follow Option 2 to directly download smaller pre-processed datasets.</p>
+<p><strong>Note:</strong> Two options for downloading the data we’ll use in the workshop are described below. If your computer has at least 8GB of memory and ~500MB of storage available, I recommend working through Option 1, which describes how to download the full dataset from the HMP portal and work through some data processing to prepare it for analysis. This will allow you to practice your R skills and see an example workflow of setting up a re-analysis of a public dataset. However, if your computer has less memory, it might have a hard time processing these tables, in which case you can follow Option 2 to directly download smaller pre-processed datasets.</p>
 <div id="option-1-download-and-process-directly-from-the-hmp-portal" class="section level2">
 <h2><span class="header-section-number">2.1</span> Option 1: Download and process directly from the HMP portal</h2>
 <p>Follow these instructions to download each of the various data files:</p>
 <ul>
 <li><strong>Metadata:</strong> From <a href="https://ibdmdb.org/tunnel/public/summary.html">this link</a>, select “Download HMP2 Metadata”.</li>
-<li><strong>Metagenomic data:</strong> At <a href="https://ibdmdb.org/tunnel/public/HMP2/WGS/1818/products">this link</a>, select “Merged tables”, then click to download the files <code>taxonomic_profiles_3.tsv.gz</code>, <code>path_abundances_3.tsv.gz</code>, and <code>ecs_3.tsv.gz</code>. These files are taxonomic abundances, pathway abundances, and abundances of genes linked to EC numbers, produced by the Metaphlan3 + Humann3 pipeline. You can read more about those tools <a href="https://elifesciences.org/articles/65088">here</a>.</li>
+<li><strong>Metagenomic data:</strong> At <a href="https://ibdmdb.org/tunnel/public/HMP2/WGS/1818/products">this link</a>, select “Merged tables”, then click to download 3 files: <code>taxonomic_profiles_3.tsv.gz</code>, <code>path_abundances_3.tsv.gz</code>, and <code>ecs_3.tsv.gz</code>. These files are taxonomic abundances, pathway abundances, and abundances of genes linked to EC numbers, produced by the Metaphlan3 + Humann3 pipeline. You can read more about those tools <a href="https://elifesciences.org/articles/65088">here</a>.</li>
 <li><strong>Metabolomics data:</strong> From <a href="https://ibdmdb.org/tunnel/public/HMP2/Metabolites/1723/products">this page</a>, click to download the file <code>HMP2_metabolomics.csv.gz</code></li>
 </ul>
 <!-- - Finally, you will also need to download [this table of metabolite ID mappings](). -->
