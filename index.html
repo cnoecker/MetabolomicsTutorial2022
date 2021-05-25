@@ -641,7 +641,7 @@ div.tocify {
 <ul>
 <li><p>You can extend this type of analysis and visualization by installing the <code>pathview</code> package to visualize data on top of KEGG pathway maps.</p></li>
 <li><p>You can do a slightly different and more systematic version of this analysis (What microbial genes and taxa appear to be responsible or responsive to linked metabolite variation?) using a tool I developed during my PhD, <a href="http://borenstein-lab.github.io/MIMOSA2shiny/">MIMOSA2</a>.</p></li>
-<li><p>We could alternative link metagenomic and metabolomic data at the level of KEGG or Metacyc pathways. What are some tradeoffs in looking at our data at the gene vs pathway levels?</p></li>
+<li><p>We could alternatively link metagenomic and metabolomic data at the level of KEGG or Metacyc pathways. What are some tradeoffs in analyzing this data at the gene vs pathway levels?</p></li>
 <li><p>What are the limitations of using this type of integrative approach? How could we strengthen this analysis?</p></li>
 </ul>
 </div>
@@ -657,7 +657,7 @@ div.tocify {
 <p>These are <em>classification</em> questions - to answer them, we want to obtain a predictive model that can accurately predict what category (e.g. control or IBD) any sample belongs to, on the basis of its high-dimensional data. Then we will inspect the models to evaluate which features in our large dataset were most informative for those predictions.</p>
 <p>We will use a commonly used type of machine learning model called a random forest. “Random Forest” describes an algorithm that combines predictions from many decision trees, each constructed from randomly sampled subsets of the data. Averaged together, these make better predictions than a single tree.</p>
 <p><img src="img/random-forest-algorithm.png" /></p>
-<p>Machine learning workflows can get quite complicated, often to limit the risk of overparameterization and overfitting to dataset idiosyncrasies.(Overfitting is very easy to do when you have thousands of possible predictors). In this analysis, we’ll work through a relatively standard workflow, using the <code>tidymodels</code> suite of packages:</p>
+<p>Machine learning workflows can get quite convoluted, in large part to limit the risk of overparameterization and overfitting to dataset idiosyncrasies. (Overfitting is very easy to do when you have thousands of possible predictors.) In this analysis, we’ll work through a relatively standard workflow, using the <code>tidymodels</code> suite of packages:</p>
 <ol style="list-style-type: decimal">
 <li><p>Define the model choice and how we will split up our data for <strong>training</strong> and <strong>testing</strong> the model.</p></li>
 <li><p>Use <strong>cross-validation</strong> to select hyperparameters for the model and get an initial idea of model accuracy (more on this below).</p></li>
