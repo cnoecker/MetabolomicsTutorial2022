@@ -395,7 +395,7 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">Multi-omics analysis tutorial, 2021</a>
+      <a class="navbar-brand" href="index.html">Metabolomics analysis tutorial, 2022</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -437,8 +437,15 @@ div.tocify {
 
 
 <p>If you run into any setup problems or questions, please feel free to email me at cecilia.noecker at ucsf.edu.</p>
-<div id="set-up-your-r-project-and-install-packages" class="section level1" number="1">
-<h1><span class="header-section-number">1</span> Set up your R project and install packages</h1>
+<div id="background-on-computing-and-using-r" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> Background on computing and using R</h1>
+<ul>
+<li><p>If you are relatively new to R, please take a few minutes to read through the “Before we start” and “Intro to R” sections of this <a href="https://datacarpentry.org/R-ecology-lesson/00-before-we-start.html">Data Carpentry lesson</a> as background: This will help us spend more time on metabolomics and biology, and less time on debugging!</p></li>
+<li><p>You may also find it helpful to read <a href="https://swcarpentry.github.io/shell-novice/02-filedir/index.html">this background</a> on files and folders. In this tutorial we will only access files from within RStudio, not using the shell/command line, but understanding how files are organized on your computer and how to access files saved in different locations is crucial for any task that involves running some code to analyze data files.</p></li>
+</ul>
+</div>
+<div id="set-up-your-r-project-and-install-packages" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Set up your R project and install packages</h1>
 <p>Hopefully you have already installed R, RStudio, and the tidyverse suite of packages for the previous tutorial. If you still need to install these, you can find instructions for doing so <a href="https://datacarpentry.org/R-ecology-lesson/#Preparations">here</a>. The linked Data/Software Carpentry website includes a lot of other useful resources for learning R and doing scientific data analysis.</p>
 <p>For this session, we will create an R Project to organize our analyses. To do so, open RStudio, select File -&gt; New Project… and create a new folder for this project (name it whatever you want).</p>
 <p>You will also need to install a few additional R packages, which you can do by running the following code in RStudio:</p>
@@ -448,8 +455,8 @@ div.tocify {
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;ggrepel&quot;</span>)</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;webchem&quot;</span>)</span></code></pre></div>
 </div>
-<div id="download-data" class="section level1" number="2">
-<h1><span class="header-section-number">2</span> Download data</h1>
+<div id="download-data" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Download data</h1>
 <p>This is the data for Part 2 of this tutorial. We’re going to pick up from Christine and Moriah and examine the processed metabolomics feature table of urine samples from the MicroPD cohort.</p>
 <ol style="list-style-type: decimal">
 <li><p>Download both data files at <a href="https://ucsf.box.com/s/c0qslbmagpnnyat4pyti17kwg7syah9w">this Box link</a> and save it to your project folder. You must be logged in to UCSF Box to have access.</p></li>
