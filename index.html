@@ -47,6 +47,92 @@
 
 
 
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { font-weight: bold; } /* Alert */
+code span.an { font-style: italic; } /* Annotation */
+code span.cf { font-weight: bold; } /* ControlFlow */
+code span.co { font-style: italic; } /* Comment */
+code span.cv { font-style: italic; } /* CommentVar */
+code span.do { font-style: italic; } /* Documentation */
+code span.dt { text-decoration: underline; } /* DataType */
+code span.er { font-weight: bold; } /* Error */
+code span.in { font-style: italic; } /* Information */
+code span.kw { font-weight: bold; } /* Keyword */
+code span.pp { font-weight: bold; } /* Preprocessor */
+code span.wa { font-style: italic; } /* Warning */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
 
 
 
@@ -310,7 +396,7 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">Multi-omics analysis tutorial, 2021</a>
+      <a class="navbar-brand" href="index.html">Metabolomics analysis tutorial, 2022</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -354,7 +440,376 @@ div.tocify {
 
 
 <p>This website contains materials for a hands-on metabolomics analysis tutorial for the BMS microbiome mini-course. The data we will use are from the same study as the previous session, the ongoing Micro-PD trial. Please visit the <a href="workshop_prep.html">Setup</a> page for some initial steps to complete prior to the tutorial.</p>
-<p>More details coming soon!</p>
+<div id="exploratory-data-analysis" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> Exploratory data analysis</h1>
+<p>Most of what we’ll do with this dataset falls under the statistical umbrella of “Exploratory Data Analysis.” We have a matrix of unidentified metabolite features. How many? How variable are they? Do they have any technical artifacts? What else do we know about them? Do the largest trends make sense with our other knowledge of this cohort? Assessing these questions is a key prerequisite for eventually testing the primary question: What effects does the antibiotic rifaximin have on subjects with Parkinson’s disease who are being treated with L-Dopa?</p>
+<div id="read-in-the-data-and-clean-it-up" class="section level2" number="1.1">
+<h2><span class="header-section-number">1.1</span> Read in the data and clean it up</h2>
+<p>First things first: Let’s read in the data and organize it into a format that will be easier to plot, explore and manipulate in R.</p>
+<p>We’ll also make sure that the sample IDs in this table can be matched up with our metadata.</p>
+<p>NOTE: This step assumes that you have already saved the data files to a folder called “data” in your project folder, and that you have also placed the metadata file in that folder. If you don’t have that file, run the following:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">download.file</span>(<span class="st">&quot;https://raw.githubusercontent.com/christineolson-ucsf/MicrobiomeTutorialData/main/metadata.tsv&quot;</span>, <span class="st">&quot;data/metadata.tsv&quot;</span>)</span></code></pre></div>
+<!-- please stop me if you don't understand something!! -->
+<!-- Reproducibility depends on the methods and technology, not as streamlined as Illumina sequencing - want to make sure your data is good and understand what is real biology and what is a product of the method -->
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggrepel)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggpubr)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(factoextra)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(webchem)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmerTest)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>met_table1 <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(<span class="st">&quot;data/Urine_PD_POS_FBMN_quant_subsetIn16Smetadata.csv&quot;</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>annotations <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(<span class="st">&quot;data/PD_Urine_POS_molnetenhancer_annotations_subset.csv&quot;</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>metadata <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(<span class="st">&quot;data/metadata.tsv&quot;</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(met_table1) <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&quot;.mzML Peak area$&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="fu">colnames</span>(met_table1))</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(met_table1) <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&quot;^PDUrine_&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="fu">colnames</span>(met_table1))</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co">#met_table1 &lt;- met_table1 %&gt;% filter(`Sample ID` != &quot;Group ID&quot;)</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">#met_table2 &lt;- met_table2 %&gt;% select(-`...32`, -`row identity (all IDs)`)</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co">#colnames(met_table2) &lt;- gsub(&quot;-PDUrine.*&quot;, &quot;&quot;, colnames(met_table2))</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">#colnames(met_table2)[1:3] &lt;- c(&quot;FeatureID&quot;, &quot;Mz&quot;, &quot;RT&quot;)</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">#dim(met_table2)</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>metadata1 <span class="ot">&lt;-</span> metadata <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="dv">12</span><span class="sc">:</span><span class="dv">33</span>)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>metadata_diet <span class="ot">&lt;-</span> metadata <span class="sc">%&gt;%</span> <span class="fu">select</span>(every_sample, <span class="dv">52</span><span class="sc">:</span><span class="dv">350</span>)</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co">#Which column names are not in the metadata table?</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(met_table1)[<span class="sc">!</span><span class="fu">colnames</span>(met_table1) <span class="sc">%in%</span> metadata1<span class="sc">$</span>every_sample]</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(met_table1) <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&quot;^0&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="fu">colnames</span>(met_table1))</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(met_table1) <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&quot;B&quot;</span>, <span class="st">&quot;T0&quot;</span>, <span class="fu">colnames</span>(met_table1))</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(met_table1)[<span class="fu">colnames</span>(met_table1)<span class="sc">==</span><span class="st">&quot;37_T1-PDUrine_32_T1&quot;</span>] <span class="ot">&lt;-</span> <span class="st">&quot;37_T1&quot;</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(met_table1)[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;FeatureID&quot;</span>, <span class="st">&quot;MZ&quot;</span>, <span class="st">&quot;RT&quot;</span>)</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co">#OK, all good!</span></span></code></pre></div>
+<p>For some plots, we’ll make a long-form version of this table using the function <code>pivot_longer</code>. “Wide data” is the best format for storing data compactly and doing some types of statistics, while “Long data” is often preferred for summarizing, exploring, and plotting.</p>
+<p>We’ll also join this long table with the compound annotations, so that we have some info on each one in the same table as their abundances.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>met_table_long <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(met_table1, <span class="at">cols =</span> <span class="fu">c</span>(<span class="sc">-</span>FeatureID, <span class="sc">-</span>MZ, <span class="sc">-</span>RT), <span class="at">names_to =</span> <span class="st">&quot;Sample&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">value =</span> <span class="fu">as.numeric</span>(value))</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>met_table_long <span class="ot">&lt;-</span> <span class="fu">left_join</span>(met_table_long, <span class="fu">select</span>(annotations, <span class="fu">c</span>(name, CF_class, CF_kingdom, CF_subclass, CF_superclass, Compound_Name, Smiles)), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;FeatureID&quot;</span> <span class="ot">=</span> <span class="st">&quot;name&quot;</span>))</span></code></pre></div>
+<p>Let’s start our exploratory QC by looking at the distribution of features across m/z and RT. We’ll make normal histograms and also a 2D histogram of features across these properties.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(met_table1, <span class="fu">aes</span>(<span class="at">x =</span> MZ)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">100</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(met_table1, <span class="fu">aes</span>(<span class="at">x =</span> RT)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">100</span>) <span class="do">## What&#39;s going on here?</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(met_table1, <span class="fu">aes</span>(<span class="at">x =</span> MZ, <span class="at">y =</span> RT)) <span class="sc">+</span> <span class="fu">geom_bin_2d</span>()</span></code></pre></div>
+<p>What might be going on here?</p>
+<p>Another QC question: do we have about the same amount of total signal from each sample? To answer this question, we’ll use a highly useful data wrangling code structure: <code>group_by</code> a variable, <code>summarize</code> to calculate some statistic within each group, and then <code>filter</code> based on the resulting statistic.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>tot_signal <span class="ot">&lt;-</span> met_table_long <span class="sc">%&gt;%</span> </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Sample) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">totSignal =</span> <span class="fu">sum</span>(value)) </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>tot_signal <span class="sc">%&gt;%</span> </span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> totSignal)) <span class="sc">+</span> <span class="fu">geom_histogram</span>()</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>tot_signal <span class="sc">%&gt;%</span> <span class="fu">filter</span>(totSignal <span class="sc">&lt;</span> <span class="fl">5e7</span>)</span></code></pre></div>
+<p>Looks pretty good. We might want to consider filtering sample 40_T0, especially if we notice other evidence of technical artifacts that differentiate it from the rest of the samples.</p>
+<p>OK, let’s look at the distributions of some of these features. Why are we doing this?</p>
+<ul>
+<li>To see if they are normally distributed or if we should apply a transformation</li>
+<li>To see if there are consistent outlier samples</li>
+<li>To see how different features are from each other</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>feature_sample <span class="ot">&lt;-</span> <span class="fu">sample</span>(met_table1<span class="sc">$</span>FeatureID, <span class="dv">30</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>met_table_long <span class="sc">%&gt;%</span> <span class="fu">filter</span>(FeatureID <span class="sc">%in%</span> feature_sample) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> value)) <span class="sc">+</span> <span class="fu">geom_histogram</span>() <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span>FeatureID, <span class="at">scales =</span> <span class="st">&quot;free_x&quot;</span>)</span></code></pre></div>
+<p>Looks like a lot of zeros! How many samples are non-zero for each feature in general? This is a chance to practice using the <code>group_by</code> and <code>summarize</code> functions.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>nonzero_count <span class="ot">&lt;-</span> met_table_long <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(FeatureID) <span class="sc">%&gt;%</span> <span class="fu">summarize</span>(<span class="at">NonZeroCount =</span> <span class="fu">length</span>(value[value <span class="sc">!=</span> <span class="dv">0</span>]))</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>nonzero_count <span class="sc">%&gt;%</span> </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> NonZeroCount)) <span class="sc">+</span> <span class="fu">geom_histogram</span>(<span class="at">binwidth =</span> <span class="dv">1</span>)</span></code></pre></div>
+<p>Wow!! Let’s filter out the features that are present in &lt; 4 samples, since those will be difficult to do any statistics with. How many features does that leave us with?</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>bad_features <span class="ot">&lt;-</span> nonzero_count <span class="sc">%&gt;%</span> <span class="fu">filter</span>(NonZeroCount <span class="sc">&lt;</span> <span class="dv">4</span>) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(FeatureID)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>met_table1 <span class="ot">&lt;-</span> met_table1 <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span>FeatureID <span class="sc">%in%</span> bad_features)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>met_table_long <span class="ot">&lt;-</span> met_table_long <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span>FeatureID <span class="sc">%in%</span> bad_features)</span></code></pre></div>
+<p>Let’s check some more feature histograms. Would they look better with a log transform?</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>feature_sample <span class="ot">&lt;-</span> <span class="fu">sample</span>(met_table1<span class="sc">$</span>FeatureID, <span class="dv">30</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>met_table_long <span class="sc">%&gt;%</span> <span class="fu">filter</span>(FeatureID <span class="sc">%in%</span> feature_sample) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> value)) <span class="sc">+</span> <span class="fu">geom_histogram</span>() <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span>FeatureID, <span class="at">scales =</span> <span class="st">&quot;free_x&quot;</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>met_table_long <span class="sc">%&gt;%</span> <span class="fu">filter</span>(FeatureID <span class="sc">%in%</span> feature_sample) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> value)) <span class="sc">+</span> <span class="fu">geom_histogram</span>() <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span>FeatureID, <span class="at">scales =</span> <span class="st">&quot;free_x&quot;</span>) <span class="sc">+</span> <span class="fu">scale_x_log10</span>()</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">#Did we lose a particular m/z range?</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(met_table1, <span class="fu">aes</span>(<span class="at">x =</span> MZ, <span class="at">y =</span> RT)) <span class="sc">+</span> <span class="fu">geom_bin_2d</span>()</span></code></pre></div>
+<p>OK, for the remaining features, we’re going to add a “pseudocount” and then apply a log transformation. Why do this?</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>met_table_long <span class="ot">&lt;-</span> met_table_long <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(FeatureID) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">MinFeatNonzero =</span> <span class="fu">min</span>(value[value <span class="sc">!=</span> <span class="dv">0</span>])) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">log10value =</span> <span class="fu">log10</span>(value <span class="sc">+</span> <span class="fl">0.5</span><span class="sc">*</span>MinFeatNonzero))</span></code></pre></div>
+<p>More histograms…</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>feature_sample <span class="ot">&lt;-</span> <span class="fu">sample</span>(met_table1<span class="sc">$</span>FeatureID, <span class="dv">30</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>met_table_long <span class="sc">%&gt;%</span> <span class="fu">filter</span>(FeatureID <span class="sc">%in%</span> feature_sample) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> log10value)) <span class="sc">+</span> <span class="fu">geom_histogram</span>() <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span>FeatureID, <span class="at">scales =</span> <span class="st">&quot;free_x&quot;</span>)</span></code></pre></div>
+<p>OK, let’s try proceeding with this version of our data. Which features are most abundant?</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>met_table_long <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(FeatureID, MZ, RT, CF_class, CF_subclass, Compound_Name) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">sumArea =</span> <span class="fu">sum</span>(value), <span class="at">medianArea =</span> <span class="fu">median</span>(value)) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(sumArea)) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n=</span><span class="dv">20</span>)</span></code></pre></div>
+<p>What other QC steps might we consider? Another common step would be to filter out features with high coefficient of variation across technical replicates (although sometimes this is performed in pre-processing).</p>
+<p>Let’s also take a quick look at the annotations generated with GNPS and MolNetEnhancer:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># How many compounds have a name? Not very many! </span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>annotations <span class="sc">%&gt;%</span> <span class="fu">summarize</span>(<span class="fu">length</span>(Compound_Name[<span class="sc">!</span><span class="fu">is.na</span>(Compound_Name)]), <span class="fu">length</span>(Compound_Name[<span class="fu">is.na</span>(Compound_Name)]))</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(annotations, <span class="fu">aes</span>(<span class="at">x =</span> CF_kingdom, <span class="at">fill =</span> CF_class)) <span class="sc">+</span> <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;count&quot;</span>) <span class="sc">+</span> <span class="fu">scale_fill_viridis_d</span>()</span></code></pre></div>
+</div>
+<div id="principal-component-analysis" class="section level2" number="1.2">
+<h2><span class="header-section-number">1.2</span> Principal component analysis</h2>
+<p>Principal component analysis (PCA) is a classic technique that tries to reduce the variation in a multifaceted dataset into as few dimensions as possible. PCA, PCoA, MDS, and NMDS are all different but related methods for performing the task of dimensional reduction or ordination - i.e. representing your sample profiles in a 2-D plot. PCA may be the simplest and most interpretable of these tools, but it only works well on appropriately normalized and approximately normally distributed data.</p>
+<p>PCA decomposes the data into orthogonal principal components that delineate the largest axes of variation in the data. It also provides <em>loadings</em> that tell us the relative contribution of each of our variables (metabolite features) to those axes. <!--  #filter(Sample != "40_T0") %>%  --></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>pca1 <span class="ot">&lt;-</span> met_table_long <span class="sc">%&gt;%</span> </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> FeatureID, <span class="at">values_from =</span> log10value, <span class="at">id_cols =</span> Sample) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">column_to_rownames</span>(<span class="st">&quot;Sample&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.matrix</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">prcomp</span>()</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="fu">biplot</span>(pca1)</span></code></pre></div>
+<p>How much of the variation in our data is explained by each principal component?</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>pca_summary <span class="ot">&lt;-</span> pca1 <span class="sc">%&gt;%</span> <span class="fu">tidy</span>(<span class="at">matrix =</span> <span class="st">&quot;pcs&quot;</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(pca_summary, <span class="fu">aes</span>(<span class="at">x =</span> PC, <span class="at">y =</span> cumulative)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_line</span>()</span></code></pre></div>
+<p>A lot of dimensions of variation in this data! Let’s plot the first two principle components anyway.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>pca_tab <span class="ot">&lt;-</span> pca1 <span class="sc">%&gt;%</span> <span class="fu">tidy</span>(<span class="at">matrix =</span> <span class="st">&quot;samples&quot;</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>pca_tab_wide <span class="ot">&lt;-</span> pca_tab <span class="sc">%&gt;%</span> <span class="fu">filter</span>(PC <span class="sc">&lt;</span> <span class="dv">6</span>) <span class="sc">%&gt;%</span> <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> PC, <span class="at">values_from =</span> value) </span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>pca_tab_wide <span class="sc">%&gt;%</span> </span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">1</span><span class="st">`</span>, <span class="at">y =</span> <span class="st">`</span><span class="at">2</span><span class="st">`</span>)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> row))</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>pca_tab_wide <span class="sc">%&gt;%</span> </span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">1</span><span class="st">`</span>, <span class="at">y =</span> <span class="st">`</span><span class="at">2</span><span class="st">`</span>)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">label =</span> row))</span></code></pre></div>
+<p>Next, let’s add some metadata to this plot!</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>pca_tab_wide <span class="ot">&lt;-</span> pca_tab_wide <span class="sc">%&gt;%</span> <span class="fu">left_join</span>(metadata1, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;row&quot;</span> <span class="ot">=</span> <span class="st">&quot;every_sample&quot;</span>))</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>pca_tab_wide <span class="sc">%&gt;%</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">1</span><span class="st">`</span>, <span class="at">y =</span> <span class="st">`</span><span class="at">2</span><span class="st">`</span>, <span class="at">color =</span> <span class="fu">factor</span>(patient_number))) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_line</span>() <span class="sc">+</span> <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">label =</span> row))</span></code></pre></div>
+<p>How to get the line to label in order?</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>pca_tab_wide <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(sample_timepoint) <span class="sc">%&gt;%</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">1</span><span class="st">`</span>, <span class="at">y =</span> <span class="st">`</span><span class="at">2</span><span class="st">`</span>, <span class="at">color =</span> <span class="fu">factor</span>(patient_number))) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_path</span>(<span class="at">arrow =</span> <span class="fu">arrow</span>()) <span class="sc">+</span> <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">label =</span> row))</span></code></pre></div>
+<p>How to get less ugly colors?</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>pca_tab_wide <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(sample_timepoint) <span class="sc">%&gt;%</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">1</span><span class="st">`</span>, <span class="at">y =</span> <span class="st">`</span><span class="at">2</span><span class="st">`</span>, <span class="at">color =</span> <span class="fu">factor</span>(patient_number))) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_path</span>() <span class="sc">+</span> <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">label =</span> row)) <span class="sc">+</span> </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(<span class="at">name =</span> <span class="st">&quot;Subject ID&quot;</span>) <span class="sc">+</span> <span class="fu">theme_classic</span>() </span></code></pre></div>
+<p>Add summary info to labels and save the plot to a variable</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>pca_plot_allSamps <span class="ot">&lt;-</span> pca_tab_wide <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(sample_timepoint) <span class="sc">%&gt;%</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">1</span><span class="st">`</span>, <span class="at">y =</span> <span class="st">`</span><span class="at">2</span><span class="st">`</span>, <span class="at">color =</span> <span class="fu">factor</span>(patient_number))) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_path</span>(<span class="at">arrow =</span> <span class="fu">arrow</span>(<span class="at">length =</span> <span class="fu">unit</span>(<span class="fl">0.1</span>, <span class="st">&quot;in&quot;</span>))) <span class="sc">+</span> <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">label =</span> row)) <span class="sc">+</span> </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(<span class="at">name =</span> <span class="st">&quot;Subject ID&quot;</span>) <span class="sc">+</span> <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="fu">paste0</span>(<span class="st">&quot;PC1 (&quot;</span>, <span class="fu">round</span>(pca_summary<span class="sc">$</span>percent[<span class="dv">1</span>]<span class="sc">*</span><span class="dv">100</span>, <span class="at">digits =</span> <span class="dv">3</span>), <span class="st">&quot;%)&quot;</span>)) <span class="sc">+</span> </span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="fu">paste0</span>(<span class="st">&quot;PC2 (&quot;</span>, <span class="fu">round</span>(pca_summary<span class="sc">$</span>percent[<span class="dv">2</span>]<span class="sc">*</span><span class="dv">100</span>, <span class="at">digits =</span> <span class="dv">3</span>), <span class="st">&quot;%&quot;</span>))</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>pca_plot_allSamps</span></code></pre></div>
+<p>In the spirit of exploring the data, try plotting PCs 3 vs 4 also.</p>
+<div id="what-features-explain-the-most-variation" class="section level3" number="1.2.1">
+<h3><span class="header-section-number">1.2.1</span> What features explain the most variation?</h3>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>pca_loadings <span class="ot">&lt;-</span> pca1 <span class="sc">%&gt;%</span> <span class="fu">tidy</span>(<span class="at">matrix =</span> <span class="st">&quot;loadings&quot;</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(pca_loadings<span class="sc">$</span>value)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>top_loadings <span class="ot">&lt;-</span> pca_loadings <span class="sc">%&gt;%</span> <span class="fu">filter</span>(PC <span class="sc">%in%</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> <span class="st">&quot;PC&quot;</span>, <span class="at">values_from =</span> <span class="st">&quot;value&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(<span class="fu">sqrt</span>(<span class="st">`</span><span class="at">1</span><span class="st">`</span><span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> <span class="st">`</span><span class="at">2</span><span class="st">`</span><span class="sc">^</span><span class="dv">2</span>), <span class="at">n=</span><span class="dv">15</span>)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>top_loadings <span class="sc">%&gt;%</span> </span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">1</span><span class="st">`</span>, <span class="at">y =</span> <span class="st">`</span><span class="at">2</span><span class="st">`</span>)) <span class="sc">+</span> <span class="fu">geom_segment</span>(<span class="at">xend =</span> <span class="dv">0</span>, <span class="at">yend =</span> <span class="dv">0</span>)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>pca_plot_allSamps <span class="sc">+</span> <span class="fu">geom_segment</span>(<span class="at">data =</span> top_loadings, <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">1</span><span class="st">`</span><span class="sc">*</span><span class="dv">30</span>, <span class="at">y =</span> <span class="st">`</span><span class="at">2</span><span class="st">`</span><span class="sc">*</span><span class="dv">30</span>), <span class="at">inherit.aes =</span> F, <span class="at">xend =</span> <span class="dv">0</span>, <span class="at">yend =</span> <span class="dv">0</span>, <span class="at">alpha =</span> <span class="fl">0.8</span>, <span class="at">linetype =</span> <span class="dv">3</span>) <span class="sc">+</span> <span class="fu">geom_text_repel</span>(<span class="at">data =</span> top_loadings, <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">1</span><span class="st">`</span><span class="sc">*</span><span class="dv">30</span>, <span class="at">y =</span> <span class="st">`</span><span class="at">2</span><span class="st">`</span><span class="sc">*</span><span class="dv">30</span>, <span class="at">label =</span> column), <span class="at">inherit.aes =</span> F, <span class="at">alpha =</span> <span class="fl">0.8</span>, <span class="at">size =</span> <span class="fl">2.5</span>)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>met_id_sub <span class="ot">&lt;-</span> met_table_long <span class="sc">%&gt;%</span> </span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(FeatureID, MZ, RT, CF_class, CF_subclass, Compound_Name) <span class="sc">%&gt;%</span> </span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">FeatureID =</span> <span class="fu">as.character</span>(FeatureID))</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>top_loadings <span class="ot">&lt;-</span> top_loadings <span class="sc">%&gt;%</span> </span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(met_id_sub, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;column&quot;</span> <span class="ot">=</span> <span class="st">&quot;FeatureID&quot;</span>))</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>top_loadings <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="st">`</span><span class="at">1</span><span class="st">`</span>) <span class="sc">%&gt;%</span> <span class="fu">View</span>()<span class="co"># What are these?</span></span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>top_loadings <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="st">`</span><span class="at">2</span><span class="st">`</span>) <span class="sc">%&gt;%</span> <span class="fu">View</span>() <span class="co"># What are these?</span></span></code></pre></div>
+<p><strong>Exercise:</strong> Go back, filter out 40_T0, and see what changes. Do you think it is valid to remove this sample?</p>
+<p>If we suspect that some of these features are due to a batch effect, how could we address this? Look up out the ComBat method.</p>
+</div>
+</div>
+</div>
+<div id="what-are-some-other-questions-we-might-want-to-answer-about-these-features" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> What are some other questions we might want to answer about these features?</h1>
+<div id="are-samples-from-the-same-person-more-similar-than-samples-from-different-people-intra-subject-vs-inter-subject-metabolite-variation" class="section level2" number="2.1">
+<h2><span class="header-section-number">2.1</span> Are samples from the same person more similar than samples from different people? (Intra-subject vs inter-subject metabolite variation)</h2>
+<p>We’ll break down the problem into steps: 1) calculate pairwise distances between samples 2) compare between samples from the same vs different people.</p>
+<p>Pairwise distances between samples:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>sample_order <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(met_table_long<span class="sc">$</span>Sample))</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>sample_dists <span class="ot">&lt;-</span> met_table_long <span class="sc">%&gt;%</span> </span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Sample) <span class="sc">%&gt;%</span> </span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> <span class="st">&quot;FeatureID&quot;</span>, <span class="at">values_from =</span> <span class="st">&quot;log10value&quot;</span>, <span class="at">id_cols =</span> <span class="st">&quot;Sample&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>Sample) <span class="sc">%&gt;%</span> </span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.matrix</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dist</span>(<span class="at">method =</span> <span class="st">&quot;euclidean&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.matrix</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Sample =</span> sample_order)</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(sample_dists) <span class="ot">&lt;-</span> <span class="fu">c</span>(sample_order, <span class="st">&quot;Sample&quot;</span>)</span></code></pre></div>
+<p>Compare inter vs intra:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>sample_dists <span class="ot">&lt;-</span> sample_dists <span class="sc">%&gt;%</span> </span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>Sample, <span class="at">names_to =</span> <span class="st">&quot;Sample2&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Sample <span class="sc">&lt;</span> Sample2) <span class="sc">%&gt;%</span> </span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Subject =</span> <span class="fu">gsub</span>(<span class="st">&quot;_T[0-2]$&quot;</span>, <span class="st">&quot;&quot;</span>, Sample), <span class="at">Subject2 =</span> <span class="fu">gsub</span>(<span class="st">&quot;_T[0-2]$&quot;</span>, <span class="st">&quot;&quot;</span>, Sample2)) <span class="sc">%&gt;%</span> </span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Type =</span> <span class="fu">ifelse</span>(Subject <span class="sc">==</span> Subject2, <span class="st">&quot;Intra&quot;</span>, <span class="st">&quot;Inter&quot;</span>))</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sample_dists, <span class="fu">aes</span>(<span class="at">x =</span> Type, <span class="at">y =</span> value)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>(<span class="at">outlier.shape =</span> <span class="cn">NA</span>) <span class="sc">+</span> <span class="fu">geom_jitter</span>(<span class="at">height =</span> <span class="dv">0</span>, <span class="at">width =</span> <span class="fl">0.25</span>) </span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sample_dists, <span class="fu">aes</span>(<span class="at">x =</span> Type, <span class="at">y =</span> value)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>(<span class="at">outlier.shape =</span> <span class="cn">NA</span>) <span class="sc">+</span> <span class="fu">geom_jitter</span>(<span class="at">height =</span> <span class="dv">0</span>, <span class="at">width =</span> <span class="fl">0.25</span>) <span class="sc">+</span> <span class="fu">stat_compare_means</span>(<span class="at">method =</span> <span class="st">&quot;wilcox.test&quot;</span>)</span></code></pre></div>
+<p>What about T0-&gt;T1 vs T1-&gt;T2?</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>sample_dists <span class="ot">&lt;-</span> sample_dists <span class="sc">%&gt;%</span> </span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TimeComparison =</span> <span class="fu">case_when</span>(</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  Type <span class="sc">==</span> <span class="st">&quot;Inter&quot;</span> <span class="sc">~</span> <span class="st">&quot;Inter&quot;</span>,</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grepl</span>(<span class="st">&quot;T0&quot;</span>, Sample) <span class="sc">&amp;</span> <span class="fu">grepl</span>(<span class="st">&quot;T1&quot;</span>, Sample2) <span class="sc">~</span> <span class="st">&quot;T0_T1&quot;</span>,</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grepl</span>(<span class="st">&quot;T0&quot;</span>, Sample) <span class="sc">&amp;</span> <span class="fu">grepl</span>(<span class="st">&quot;T2&quot;</span>, Sample2) <span class="sc">~</span> <span class="st">&quot;T0_T2&quot;</span>,</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grepl</span>(<span class="st">&quot;T1&quot;</span>, Sample) <span class="sc">&amp;</span> <span class="fu">grepl</span>(<span class="st">&quot;T2&quot;</span>, Sample2) <span class="sc">~</span> <span class="st">&quot;T1_T2&quot;</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sample_dists, <span class="fu">aes</span>(<span class="at">x =</span> TimeComparison, <span class="at">y =</span> value)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>(<span class="at">outlier.shape =</span> <span class="cn">NA</span>) <span class="sc">+</span> <span class="fu">geom_jitter</span>(<span class="at">height =</span> <span class="dv">0</span>, <span class="at">width =</span> <span class="fl">0.25</span>, <span class="fu">aes</span>(<span class="at">color =</span> Subject)) <span class="sc">+</span> <span class="fu">scale_color_viridis_d</span>()</span></code></pre></div>
+<!-- 
+Optional - which features most distinguish male from female? 
+Which features correlate with dietary variables?
+Are there features associated with duration of time on lopa?
+Are there clusters in the data (that might be indicative of antibiotic treatment)?
+-->
+</div>
+<div id="what-features-are-differentially-abundant-by-sex-age-and-time" class="section level2" number="2.2">
+<h2><span class="header-section-number">2.2</span> What features are differentially abundant by sex, age, and time?</h2>
+<p>Should we include Sample 40_T0 or not?</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>met_table_long <span class="ot">&lt;-</span> met_table_long <span class="sc">%&gt;%</span> </span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(metadata1, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;Sample&quot;</span> <span class="ot">=</span> <span class="st">&quot;every_sample&quot;</span>))</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>sex_age_model_results <span class="ot">&lt;-</span> met_table_long <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Sample <span class="sc">!=</span> <span class="st">&quot;40_T0&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(FeatureID) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">do</span>(</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">lmer</span>(log10value<span class="sc">~</span>gender<span class="sc">+</span>age<span class="sc">+</span>sample_timepoint<span class="sc">+</span>(<span class="dv">1</span><span class="sc">|</span>patient_number), <span class="at">data=</span>.) <span class="sc">%&gt;%</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summary</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    .<span class="sc">$</span>coefficients <span class="sc">%&gt;%</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rownames_to_column</span>(<span class="st">&quot;Term&quot;</span>)</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>sex_age_model_results <span class="ot">&lt;-</span> sex_age_model_results <span class="sc">%&gt;%</span> </span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Term <span class="sc">!=</span> <span class="st">&quot;(Intercept)&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Term) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">FDRCorrect =</span> <span class="fu">p.adjust</span>(<span class="st">`</span><span class="at">Pr(&gt;|t|)</span><span class="st">`</span>, <span class="at">method =</span> <span class="st">&quot;BH&quot;</span>))</span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sex_age_model_results, <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">Pr(&gt;|t|)</span><span class="st">`</span>)) <span class="sc">+</span> <span class="fu">geom_histogram</span>() <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span>Term) <span class="co"># probably real signal, but underpowered</span></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>signif_features <span class="ot">&lt;-</span> sex_age_model_results <span class="sc">%&gt;%</span> <span class="fu">filter</span>(FDRCorrect <span class="sc">&lt;</span> <span class="fl">0.25</span>)</span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>signif_features <span class="sc">%&gt;%</span> </span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">FeatureID =</span> <span class="fu">as.character</span>(FeatureID)) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(met_id_sub, <span class="at">by =</span> <span class="st">&quot;FeatureID&quot;</span>)</span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a><span class="do">## Not much consistent signal for time</span></span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a>sex_age_model_results <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">&quot;T1&quot;</span>, Term)) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="st">`</span><span class="at">Pr(&gt;|t|)</span><span class="st">`</span>)</span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a>sex_age_model_results <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">&quot;T2&quot;</span>, Term)) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="st">`</span><span class="at">Pr(&gt;|t|)</span><span class="st">`</span>)</span></code></pre></div>
+<p>Let’s plot the significant features!</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>met_table_long <span class="sc">%&gt;%</span> <span class="fu">filter</span>(FeatureID <span class="sc">%in%</span> signif_features<span class="sc">$</span>FeatureID) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> age, <span class="at">y =</span> log10value, <span class="at">color =</span> <span class="fu">factor</span>(gender))) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_path</span>(<span class="fu">aes</span>(<span class="at">group =</span> patient_number)) <span class="sc">+</span> <span class="fu">facet_wrap</span>(<span class="sc">~</span>FeatureID, <span class="at">scales =</span> <span class="st">&quot;free&quot;</span>)</span></code></pre></div>
+<p>What have we learned? - No features associated with study time point (makes sense since we expect time point to have no effect for half the cohort) - Some evidence of clustering which should be investigated further - A small number of urine metabolites associated with sex and age in a Parkinson’s disease cohort</p>
+</div>
+<div id="do-our-samples-naturally-cluster-into-groups" class="section level2" number="2.3">
+<h2><span class="header-section-number">2.3</span> Do our samples naturally cluster into groups?</h2>
+<p>To answer this question, we’ll use the <code>factoextra</code> package to do k-means clustering.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>met_mat <span class="ot">&lt;-</span> met_table_long <span class="sc">%&gt;%</span> </span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Sample) <span class="sc">%&gt;%</span> </span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> <span class="st">&quot;FeatureID&quot;</span>, <span class="at">values_from =</span> <span class="st">&quot;log10value&quot;</span>, <span class="at">id_cols =</span> <span class="st">&quot;Sample&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">column_to_rownames</span>(<span class="st">&quot;Sample&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.matrix</span>()</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_nbclust</span>(met_mat, kmeans, <span class="at">method =</span> <span class="st">&quot;silhouette&quot;</span>)  <span class="do">## Higher values mean more distinguished clusters</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_nbclust</span>(met_mat, kmeans, <span class="at">method =</span> <span class="st">&quot;gap_stat&quot;</span>) <span class="do">## Which value of k gives us the most non-random distribution of points across the clusters</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>final_clust <span class="ot">&lt;-</span> <span class="fu">kmeans</span>(met_mat, <span class="at">centers =</span> <span class="dv">3</span>)</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_cluster</span>(final_clust, <span class="at">data =</span> met_mat)</span></code></pre></div>
+<p>Repeat without our potential outlier sample?</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>met_mat <span class="ot">&lt;-</span> met_table_long <span class="sc">%&gt;%</span> </span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Sample <span class="sc">!=</span> <span class="st">&quot;40_T0&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Sample) <span class="sc">%&gt;%</span> </span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> <span class="st">&quot;FeatureID&quot;</span>, <span class="at">values_from =</span> <span class="st">&quot;log10value&quot;</span>, <span class="at">id_cols =</span> <span class="st">&quot;Sample&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">column_to_rownames</span>(<span class="st">&quot;Sample&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.matrix</span>()</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_nbclust</span>(met_mat, kmeans, <span class="at">method =</span> <span class="st">&quot;silhouette&quot;</span>)  <span class="do">## Higher values mean more distinguished clusters</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_nbclust</span>(met_mat, kmeans, <span class="at">method =</span> <span class="st">&quot;gap_stat&quot;</span>) <span class="do">## Which value of k gives us the most non-random distribution of points across the clusters</span></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>final_clust <span class="ot">&lt;-</span> <span class="fu">kmeans</span>(met_mat, <span class="at">centers =</span> <span class="dv">2</span>)</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_cluster</span>(final_clust, <span class="at">data =</span> met_mat)</span></code></pre></div>
+</div>
+<div id="bonus-are-there-metabolites-associated-with-the-microbiome" class="section level2" number="2.4">
+<h2><span class="header-section-number">2.4</span> Bonus: Are there metabolites associated with the microbiome?</h2>
+<p>To start to explore this, we’ll do a fairly straightforward analysis: what are the strongest rank-based correlations between individual ASVs/microbes and metabolite features?</p>
+<p>First, let’s read in the ASV table from yesterday, normalize it, and set it up.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(qiime2R)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>asv_table <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(<span class="st">&quot;data/asv_table.csv&quot;</span>)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(asv_table) <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&quot;-&quot;</span>, <span class="st">&quot;_&quot;</span>, <span class="fu">gsub</span>(<span class="st">&quot;MicroPD-&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="fu">colnames</span>(asv_table)))</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(asv_table) <span class="sc">%in%</span> met_table_long<span class="sc">$</span>Sample</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(asv_table)[<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="st">&quot;ASV&quot;</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>asv_table <span class="ot">&lt;-</span> asv_table <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="st">&quot;ASV&quot;</span>, <span class="fu">unique</span>(met_table_long<span class="sc">$</span>Sample))</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>asv_tax <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(<span class="st">&quot;data/taxonomy.csv&quot;</span>)</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(asv_tax)[<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="st">&quot;ASV&quot;</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>asv_table_norm <span class="ot">&lt;-</span> asv_table <span class="sc">%&gt;%</span> </span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">column_to_rownames</span>(<span class="st">&quot;ASV&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.matrix</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">make_clr</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ASV =</span> asv_table<span class="sc">$</span>ASV)</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>asv_table_long <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(asv_table_norm, <span class="sc">-</span>ASV, <span class="at">names_to =</span> <span class="st">&quot;Sample&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;CLR&quot;</span>)</span></code></pre></div>
+<p>We’re going to filter to only look at ASVs that are present in at least 6 samples.</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>asv_samp_frequency <span class="ot">&lt;-</span> asv_table <span class="sc">%&gt;%</span> </span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>ASV, <span class="at">names_to =</span> <span class="st">&quot;Sample&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;Count&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ASV) <span class="sc">%&gt;%</span> </span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">nSamps =</span> <span class="fu">length</span>(Count[Count <span class="sc">!=</span> <span class="dv">0</span>]))</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>asvs_keep <span class="ot">&lt;-</span> asv_samp_frequency <span class="sc">%&gt;%</span> </span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(nSamps <span class="sc">&gt;</span> <span class="dv">5</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(ASV)</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>met_table_sub <span class="ot">&lt;-</span> met_table_long <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Sample <span class="sc">!=</span> <span class="st">&quot;40_T0&quot;</span>)</span></code></pre></div>
+<p>Next, we’ll calculate a whole lot of correlations. This will take a little bit to run - if you want to speed it up, you can filter the ASVs and/or metabolite features more strictly.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>corr_table <span class="ot">&lt;-</span> asv_table_long <span class="sc">%&gt;%</span> </span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ASV <span class="sc">%in%</span> asvs_keep) <span class="sc">%&gt;%</span> </span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">select</span>(met_table_sub, FeatureID, Sample, log10value)) <span class="sc">%&gt;%</span> </span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(FeatureID)) <span class="sc">%&gt;%</span> </span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ASV, FeatureID) <span class="sc">%&gt;%</span> </span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cor.test</span>(CLR, log10value, <span class="at">method =</span> <span class="st">&quot;spearman&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">tidy</span>()</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<p>Multiple hypothesis correction is very important in this context!!</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>corr_table <span class="ot">&lt;-</span> <span class="fu">mutate</span>(corr_table, </span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">FDRCorrected =</span> <span class="fu">p.adjust</span>(p.value, <span class="at">method =</span> <span class="st">&quot;BH&quot;</span>))</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>corr_table <span class="sc">%&gt;%</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> p.value)) <span class="sc">+</span> <span class="fu">geom_histogram</span>()</span></code></pre></div>
+<p>OK, what do we know about the strongest correlations?</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>corr_table <span class="ot">&lt;-</span> corr_table <span class="sc">%&gt;%</span> </span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">FeatureID =</span> <span class="fu">as.character</span>(FeatureID)) <span class="sc">%&gt;%</span> </span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(met_id_sub, <span class="at">by =</span> <span class="st">&quot;FeatureID&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(asv_tax, <span class="at">by =</span> <span class="st">&quot;ASV&quot;</span>)</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>corr_table <span class="sc">%&gt;%</span> <span class="fu">filter</span>(FDRCorrected <span class="sc">&lt;</span> <span class="fl">0.05</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(FDRCorrected) <span class="sc">%&gt;%</span> <span class="fu">View</span>()</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="do">## How many corelations for each feature and ASV?</span></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>corr_table <span class="sc">%&gt;%</span> <span class="fu">filter</span>(FDRCorrected <span class="sc">&lt;</span> <span class="fl">0.05</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ASV, Genus, Species) <span class="sc">%&gt;%</span> <span class="fu">count</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n))</span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>corr_table <span class="sc">%&gt;%</span> <span class="fu">filter</span>(FDRCorrected <span class="sc">&lt;</span> <span class="fl">0.05</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(FeatureID, Compound_Name, CF_class) <span class="sc">%&gt;%</span> <span class="fu">count</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n))</span></code></pre></div>
+<p>Let’s plot the strongest correlation.</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>combined_tab <span class="ot">&lt;-</span> met_table_long <span class="sc">%&gt;%</span> </span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(FeatureID<span class="sc">==</span><span class="dv">273</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">filter</span>(asv_table_long, ASV<span class="sc">==</span><span class="st">&quot;ASV_413&quot;</span>), <span class="at">by =</span> <span class="st">&quot;Sample&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(sample_timepoint)</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>signif_corr_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(combined_tab, <span class="fu">aes</span>(<span class="at">x =</span> CLR, <span class="at">y =</span> log10value, <span class="at">color =</span> <span class="fu">factor</span>(patient_number))) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">scale_color_viridis_d</span>()</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>signif_corr_plot</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a><span class="do">## What&#39;s happening within each subject?</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>signif_corr_plot <span class="sc">+</span> <span class="fu">geom_path</span>(<span class="fu">aes</span>(<span class="at">group =</span> patient_number), <span class="at">arrow =</span> <span class="fu">arrow</span>(<span class="at">length =</span> <span class="fu">unit</span>(<span class="fl">0.1</span>, <span class="st">&quot;in&quot;</span>)))</span></code></pre></div>
+<p>What are some reasons why a gut microbe’s abundance might be correlated with a metabolite in urine? How can we test specific hypotheses on their relationship?</p>
+<p>There are many other ways to integrate microbiome and metabolome data to answer different questions! Some of these include:</p>
+<ul>
+<li>(sparse) canonical correlation analysis</li>
+<li>Procrustes analysis</li>
+<li>Mantel test</li>
+<li>MIMOSA2</li>
+</ul>
+</div>
+</div>
 
 
 
@@ -393,7 +848,7 @@ $(document).ready(function () {
 <!-- code folding -->
 <script>
 $(document).ready(function () {
-  window.initializeCodeFolding("show" === "show");
+  window.initializeCodeFolding("hide" === "show");
 });
 </script>
 
